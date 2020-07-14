@@ -165,7 +165,7 @@ var _ = Describe("ReadWrite", func() {
 		read, ok, err := b.ReadUntil([]byte("hello world tomorrow "))
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeFalse())
-		Expect(read).To(Equal(""))
+		Expect(string(read)).To(Equal(""))
 
 		read, ok, err = b.ReadUntil([]byte(" "))
 		Expect(err).To(BeNil())
@@ -180,6 +180,6 @@ var _ = Describe("ReadWrite", func() {
 		read, ok, err = b.ReadUntil([]byte(" "))
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeFalse())
-		Expect(read).To(Equal(""))
+		Expect(string(read)).To(Equal(""))
 	})
 })
