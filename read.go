@@ -3,7 +3,6 @@ package gobuf
 import (
 	"bytes"
 	"math"
-	"strconv"
 )
 
 // ReadBool read a bool
@@ -162,7 +161,6 @@ func (buf *Buffer) ReadUntil(delim []byte) ([]byte, bool, error) {
 		}
 		out = append(out, b)
 
-		println(strconv.Quote(string(out)), offset, strconv.Quote(string(out[offset:])))
 		if bytes.Equal(out[offset:], delim) {
 			buf.readIndex += offset + 1
 			return out[:offset], true, nil
