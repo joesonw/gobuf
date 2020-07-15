@@ -6,30 +6,6 @@ import (
 )
 
 var _ = Describe("Buffer", func() {
-	It("should clone", func() {
-		buf := New(nil, WithAutoGrowMemory(FixedGrow(5)))
-		Expect(buf.Size()).To(Equal(0))
-		Expect(buf.WriteIndex()).To(Equal(0))
-		Expect(buf.ReadIndex()).To(Equal(0))
-		Expect(buf.Available()).To(Equal(0))
-
-		ExpectSizeError(11)(buf.Write([]byte("hello world")))
-		Expect(buf.Size()).To(Equal(11))
-		Expect(buf.Available()).To(Equal(11))
-		Expect(buf.WriteIndex()).To(Equal(11))
-
-		buf = buf.Clone()
-		Expect(buf.Size()).To(Equal(11))
-		Expect(buf.WriteIndex()).To(Equal(11))
-		Expect(buf.ReadIndex()).To(Equal(0))
-		Expect(buf.Available()).To(Equal(11))
-
-		buf.Reset()
-		Expect(buf.Size()).To(Equal(0))
-		Expect(buf.WriteIndex()).To(Equal(0))
-		Expect(buf.ReadIndex()).To(Equal(0))
-		Expect(buf.Available()).To(Equal(0))
-	})
 	It("should write", func() {
 		buf := New(nil, WithAutoGrowMemory(FixedGrow(5)))
 		Expect(buf.Size()).To(Equal(0))

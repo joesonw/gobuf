@@ -12,7 +12,7 @@ func WithMemory(m Memory) OptionFunc {
 
 func WithAutoGrowMemory(grow Grow) OptionFunc {
 	return func(b *Buffer, buf []byte) {
-		m := newSliceMemory(buf)
+		m := NewSliceMemory(buf)
 		m.grow = grow
 		b.mem = m
 	}
@@ -20,7 +20,7 @@ func WithAutoGrowMemory(grow Grow) OptionFunc {
 
 func WithLinkedListMemory(grow Grow) OptionFunc {
 	return func(b *Buffer, buf []byte) {
-		b.mem = newLinkedListMemory(buf, grow)
+		b.mem = NewLinkedListMemory(buf, grow)
 	}
 }
 

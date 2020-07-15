@@ -1,5 +1,7 @@
 package gobuf
 
+import "io"
+
 // Memory used to store raw []byte
 type Memory interface {
 	// Write write at given location, with b
@@ -20,7 +22,7 @@ type SliceMemory struct {
 	grow Grow
 }
 
-func newSliceMemory(buf []byte) *SliceMemory {
+func NewSliceMemory(buf []byte) *SliceMemory {
 	return &SliceMemory{
 		buf: buf,
 	}
@@ -45,7 +47,7 @@ func (m *SliceMemory) Write(at int, src []byte) error {
 func (m *SliceMemory) Read(at int, dst []byte) error {
 	end := at + len(dst)
 	if end > cap(m.buf) {
-		return ErrNotEnoughData
+		return io.EOF
 	}
 
 	copy(dst, m.buf[at:end])
@@ -72,7 +74,7 @@ type LinkedListMemory struct {
 	grow  Grow
 }
 
-func newLinkedListMemory(buf []byte, grow Grow) *LinkedListMemory {
+func NewLinkedListMemory(buf []byte, grow Grow) *LinkedListMemory {
 	return &LinkedListMemory{
 		start: &linkedListMemoryNode{
 			buf: buf,
@@ -144,7 +146,7 @@ func (m *LinkedListMemory) Read(at int, dst []byte) error {
 
 	for read < total {
 		if node == nil {
-			return ErrNotEnoughData
+			return io.EOF
 		}
 
 		nodeCapacity := cap(node.buf)

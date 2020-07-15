@@ -5,15 +5,50 @@ import (
 	"math"
 )
 
+type Readable interface {
+	Size() int
+}
+
+type Reader struct {
+	Readable
+	*Peeker
+}
+
+func NewRead(r Readable, p *Peeker) *Reader {
+	return &Reader{
+		Readable: r,
+		Peeker:   p,
+	}
+}
+
+// SkipRead advance read index
+func (r *Reader) SkipRead(n int) {
+	r.Peeker.index += n
+}
+
+// Available available bytes to read
+func (r *Reader) Available() int {
+	return r.Size() - r.ReadIndex()
+}
+
+// Read io.Reader
+func (r *Reader) Read(dst []byte) (n int, err error) {
+	n, err = r.Peek(0, dst)
+	if err == nil {
+		r.SkipRead(n)
+	}
+	return
+}
+
 // ReadBool read a bool
-func (buf *Buffer) ReadBool() (bool, error) {
-	b, err := buf.ReadByte()
+func (r *Reader) ReadBool() (bool, error) {
+	b, err := r.ReadByte()
 	return b == 1, err
 }
 
 // PeekByte read a byte
-func (buf *Buffer) ReadByte() (byte, error) {
-	b, err := buf.ReadBytes(1)
+func (r *Reader) ReadByte() (byte, error) {
+	b, err := r.ReadBytes(1)
 	if err != nil {
 		return 0, err
 	}
@@ -22,9 +57,9 @@ func (buf *Buffer) ReadByte() (byte, error) {
 }
 
 // ReadBytes read given length of bytes
-func (buf *Buffer) ReadBytes(n int) ([]byte, error) {
+func (r *Reader) ReadBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
-	_, err := buf.Read(b)
+	_, err := r.Read(b)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +68,8 @@ func (buf *Buffer) ReadBytes(n int) ([]byte, error) {
 }
 
 // ReadString read given length of string
-func (buf *Buffer) ReadString(n int) (string, error) {
-	b, err := buf.ReadBytes(n)
+func (r *Reader) ReadString(n int) (string, error) {
+	b, err := r.ReadBytes(n)
 	if err != nil {
 		return "", err
 	}
@@ -43,80 +78,80 @@ func (buf *Buffer) ReadString(n int) (string, error) {
 }
 
 // ReadUint8 read uint8
-func (buf *Buffer) ReadUint8() (uint8, error) {
-	b, err := buf.ReadByte()
+func (r *Reader) ReadUint8() (uint8, error) {
+	b, err := r.ReadByte()
 	return b, err
 }
 
 // ReadUint16 read uint16
-func (buf *Buffer) ReadUint16() (uint16, error) {
-	b, err := buf.ReadBytes(2)
+func (r *Reader) ReadUint16() (uint16, error) {
+	b, err := r.ReadBytes(2)
 	if err != nil {
 		return 0, err
 	}
 
-	return buf.order.Uint16(b), nil
+	return r.Order().Uint16(b), nil
 }
 
 // ReadUint32 read uint32
-func (buf *Buffer) ReadUint32() (uint32, error) {
-	b, err := buf.ReadBytes(4)
+func (r *Reader) ReadUint32() (uint32, error) {
+	b, err := r.ReadBytes(4)
 	if err != nil {
 		return 0, err
 	}
 
-	return buf.order.Uint32(b), nil
+	return r.Order().Uint32(b), nil
 }
 
 // ReadUint64 read uint64
-func (buf *Buffer) ReadUint64() (uint64, error) {
-	b, err := buf.ReadBytes(8)
+func (r *Reader) ReadUint64() (uint64, error) {
+	b, err := r.ReadBytes(8)
 	if err != nil {
 		return 0, err
 	}
 
-	return buf.order.Uint64(b), nil
+	return r.Order().Uint64(b), nil
 }
 
 // ReadInt8 read int8
-func (buf *Buffer) ReadInt8() (int8, error) {
-	b, err := buf.ReadByte()
+func (r *Reader) ReadInt8() (int8, error) {
+	b, err := r.ReadByte()
 	return int8(b), err
 }
 
 // ReadInt16 read int16
-func (buf *Buffer) ReadInt16() (int16, error) {
-	b, err := buf.ReadBytes(2)
+func (r *Reader) ReadInt16() (int16, error) {
+	b, err := r.ReadBytes(2)
 	if err != nil {
 		return 0, err
 	}
 
-	return int16(buf.order.Uint16(b)), nil
+	return int16(r.Order().Uint16(b)), nil
 }
 
 // ReadInt32 read int32
-func (buf *Buffer) ReadInt32() (int32, error) {
-	b, err := buf.ReadBytes(4)
+func (r *Reader) ReadInt32() (int32, error) {
+	b, err := r.ReadBytes(4)
 	if err != nil {
 		return 0, err
 	}
 
-	return int32(buf.order.Uint32(b)), nil
+	return int32(r.Order().Uint32(b)), nil
 }
 
 // ReadInt64 read int64
-func (buf *Buffer) ReadInt64() (int64, error) {
-	b, err := buf.ReadBytes(8)
+func (r *Reader) ReadInt64() (int64, error) {
+	b, err := r.ReadBytes(8)
 	if err != nil {
 		return 0, err
 	}
 
-	return int64(buf.order.Uint64(b)), nil
+	return int64(r.Order().Uint64(b)), nil
 }
 
 // ReadFloat32 read float32
-func (buf *Buffer) ReadFloat32() (float32, error) {
-	u, err := buf.ReadUint32()
+func (r *Reader) ReadFloat32() (float32, error) {
+	u, err := r.ReadUint32()
 	if err != nil {
 		return 0, err
 	}
@@ -124,8 +159,8 @@ func (buf *Buffer) ReadFloat32() (float32, error) {
 }
 
 // ReadFloat64 read float64
-func (buf *Buffer) ReadFloat64() (float64, error) {
-	u, err := buf.ReadUint64()
+func (r *Reader) ReadFloat64() (float64, error) {
+	u, err := r.ReadUint64()
 	if err != nil {
 		return 0, err
 	}
@@ -134,35 +169,35 @@ func (buf *Buffer) ReadFloat64() (float64, error) {
 
 //nolint:gocritic
 // ReadUntil read until delimiter, than skip delimiter and return. otherwise, return false
-func (buf *Buffer) ReadUntil(delim []byte) ([]byte, bool, error) {
+func (r *Reader) ReadUntil(delim []byte) ([]byte, bool, error) {
 	length := len(delim)
 	// short circuit
-	if buf.Available() < length {
+	if r.Available() < length {
 		return nil, false, nil
 	}
 
-	out, err := buf.PeekBytes(length)
+	out, err := r.PeekBytes(length)
 	if err != nil {
 		return nil, false, err
 	}
 	if bytes.Equal(out, delim) {
-		buf.readIndex += length
+		r.SkipRead(length)
 		return []byte{}, true, nil
 	}
 
-	index := buf.readIndex + length
+	index := r.ReadIndex() + length
 	offset := length
-	size := buf.size
+	size := r.Size()
 
 	for index < size {
-		b, err := buf.PeekByte(offset)
+		b, err := r.PeekByte(offset)
 		if err != nil {
 			return nil, false, err
 		}
 		out = append(out, b)
 
 		if bytes.Equal(out[offset:], delim) {
-			buf.readIndex += offset + 1
+			r.SkipRead(offset + 1)
 			return out[:offset], true, nil
 		}
 		offset++

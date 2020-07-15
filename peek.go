@@ -1,16 +1,44 @@
 package gobuf
 
-import "math"
+import (
+	"encoding/binary"
+	"math"
+)
+
+type Peekable interface {
+	PeekAt(at int, dst []byte) (int, error)
+	Order() binary.ByteOrder
+}
+
+type Peeker struct {
+	Peekable
+	index int
+}
+
+func NewPeeker(p Peekable) *Peeker {
+	return &Peeker{
+		Peekable: p,
+	}
+}
+
+func (p *Peeker) ReadIndex() int {
+	return p.index
+}
+
+func (p *Peeker) Peek(offset int, dst []byte) (n int, err error) {
+	index := p.ReadIndex() + offset
+	return p.PeekAt(index, dst)
+}
 
 // PeekBool peek a bool
-func (buf *Buffer) PeekBool(offset ...int) (bool, error) {
-	b, err := buf.PeekByte(offset...)
+func (p *Peeker) PeekBool(offset ...int) (bool, error) {
+	b, err := p.PeekByte(offset...)
 	return b == 1, err
 }
 
 // PeekByte peek a byte
-func (buf *Buffer) PeekByte(offset ...int) (byte, error) {
-	b, err := buf.PeekBytes(1, offset...)
+func (p *Peeker) PeekByte(offset ...int) (byte, error) {
+	b, err := p.PeekBytes(1, offset...)
 	if err != nil {
 		return 0, err
 	}
@@ -19,13 +47,13 @@ func (buf *Buffer) PeekByte(offset ...int) (byte, error) {
 }
 
 // PeekBytes peek given length of bytes
-func (buf *Buffer) PeekBytes(n int, offset ...int) ([]byte, error) {
+func (p *Peeker) PeekBytes(n int, offset ...int) ([]byte, error) {
 	o := 0
 	if len(offset) > 0 {
 		o = offset[0]
 	}
 	b := make([]byte, n)
-	_, err := buf.Peek(o, b)
+	_, err := p.Peek(o, b)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +62,8 @@ func (buf *Buffer) PeekBytes(n int, offset ...int) ([]byte, error) {
 }
 
 // PeekString peek given length of string
-func (buf *Buffer) PeekString(n int, offset ...int) (string, error) {
-	b, err := buf.PeekBytes(n, offset...)
+func (p *Peeker) PeekString(n int, offset ...int) (string, error) {
+	b, err := p.PeekBytes(n, offset...)
 	if err != nil {
 		return "", err
 	}
@@ -43,8 +71,8 @@ func (buf *Buffer) PeekString(n int, offset ...int) (string, error) {
 }
 
 // PeekUint8 peek uint8
-func (buf *Buffer) PeekUint8(offset ...int) (uint8, error) {
-	b, err := buf.PeekByte(offset...)
+func (p *Peeker) PeekUint8(offset ...int) (uint8, error) {
+	b, err := p.PeekByte(offset...)
 	if err != nil {
 		return 0, err
 	}
@@ -53,38 +81,38 @@ func (buf *Buffer) PeekUint8(offset ...int) (uint8, error) {
 }
 
 // PeekUint16 peek uint16
-func (buf *Buffer) PeekUint16(offset ...int) (uint16, error) {
-	b, err := buf.PeekBytes(2, offset...)
+func (p *Peeker) PeekUint16(offset ...int) (uint16, error) {
+	b, err := p.PeekBytes(2, offset...)
 	if err != nil {
 		return 0, err
 	}
 
-	return buf.order.Uint16(b), nil
+	return p.Order().Uint16(b), nil
 }
 
 // PeekUint32 peek uint32
-func (buf *Buffer) PeekUint32(offset ...int) (uint32, error) {
-	b, err := buf.PeekBytes(4, offset...)
+func (p *Peeker) PeekUint32(offset ...int) (uint32, error) {
+	b, err := p.PeekBytes(4, offset...)
 	if err != nil {
 		return 0, err
 	}
 
-	return buf.order.Uint32(b), nil
+	return p.Order().Uint32(b), nil
 }
 
 // PeekUint64 peek uint64
-func (buf *Buffer) PeekUint64(offset ...int) (uint64, error) {
-	b, err := buf.PeekBytes(8, offset...)
+func (p *Peeker) PeekUint64(offset ...int) (uint64, error) {
+	b, err := p.PeekBytes(8, offset...)
 	if err != nil {
 		return 0, err
 	}
 
-	return buf.order.Uint64(b), nil
+	return p.Order().Uint64(b), nil
 }
 
 // PeekInt8 peek int8
-func (buf *Buffer) PeekInt8(offset ...int) (int8, error) {
-	b, err := buf.PeekByte(offset...)
+func (p *Peeker) PeekInt8(offset ...int) (int8, error) {
+	b, err := p.PeekByte(offset...)
 	if err != nil {
 		return 0, err
 	}
@@ -93,38 +121,38 @@ func (buf *Buffer) PeekInt8(offset ...int) (int8, error) {
 }
 
 // PeekInt16 peek int16
-func (buf *Buffer) PeekInt16(offset ...int) (int16, error) {
-	b, err := buf.PeekBytes(2, offset...)
+func (p *Peeker) PeekInt16(offset ...int) (int16, error) {
+	b, err := p.PeekBytes(2, offset...)
 	if err != nil {
 		return 0, err
 	}
 
-	return int16(buf.order.Uint16(b)), nil
+	return int16(p.Order().Uint16(b)), nil
 }
 
 // PeekInt32 peek int32
-func (buf *Buffer) PeekInt32(offset ...int) (int32, error) {
-	b, err := buf.PeekBytes(4, offset...)
+func (p *Peeker) PeekInt32(offset ...int) (int32, error) {
+	b, err := p.PeekBytes(4, offset...)
 	if err != nil {
 		return 0, err
 	}
 
-	return int32(buf.order.Uint32(b)), nil
+	return int32(p.Order().Uint32(b)), nil
 }
 
 // PeekInt64 peek int64
-func (buf *Buffer) PeekInt64(offset ...int) (int64, error) {
-	b, err := buf.PeekBytes(8, offset...)
+func (p *Peeker) PeekInt64(offset ...int) (int64, error) {
+	b, err := p.PeekBytes(8, offset...)
 	if err != nil {
 		return 0, err
 	}
 
-	return int64(buf.order.Uint64(b)), nil
+	return int64(p.Order().Uint64(b)), nil
 }
 
 // PeekFloat32 peek float32
-func (buf *Buffer) PeekFloat32(offset ...int) (float32, error) {
-	u, err := buf.PeekUint32(offset...)
+func (p *Peeker) PeekFloat32(offset ...int) (float32, error) {
+	u, err := p.PeekUint32(offset...)
 	if err != nil {
 		return 0, err
 	}
@@ -132,8 +160,8 @@ func (buf *Buffer) PeekFloat32(offset ...int) (float32, error) {
 }
 
 // PeekFloat64 peek float64
-func (buf *Buffer) PeekFloat64(offset ...int) (float64, error) {
-	u, err := buf.PeekUint64(offset...)
+func (p *Peeker) PeekFloat64(offset ...int) (float64, error) {
+	u, err := p.PeekUint64(offset...)
 	if err != nil {
 		return 0, err
 	}

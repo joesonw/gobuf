@@ -1,6 +1,8 @@
 package gobuf
 
 import (
+	"io"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -8,7 +10,7 @@ import (
 var _ = Describe("Memory", func() {
 	Describe("SliceMemory", func() {
 		It("should read", func() {
-			m := newSliceMemory([]byte("hello"))
+			m := NewSliceMemory([]byte("hello"))
 
 			b := make([]byte, 5)
 			err := m.Read(0, b)
@@ -22,11 +24,11 @@ var _ = Describe("Memory", func() {
 
 			b = make([]byte, 3)
 			err = m.Read(3, b)
-			Expect(err).To(Equal(ErrNotEnoughData))
+			Expect(err).To(Equal(io.EOF))
 		})
 
 		It("should write", func() {
-			m := newSliceMemory([]byte("hello"))
+			m := NewSliceMemory([]byte("hello"))
 
 			err := m.Write(0, []byte("world"))
 			Expect(err).To(BeNil())
@@ -44,7 +46,7 @@ var _ = Describe("Memory", func() {
 
 	Describe("SliceMemory canGrow", func() {
 		It("should write", func() {
-			m := newSliceMemory([]byte("hello"))
+			m := NewSliceMemory([]byte("hello"))
 			m.grow = FixedGrow(5)
 
 			err := m.Write(0, []byte("world"))
@@ -62,7 +64,7 @@ var _ = Describe("Memory", func() {
 			Expect(cap(m.buf)).To(Equal(15))
 			Expect(m.Length()).To(Equal(15))
 
-			m = newSliceMemory([]byte("hello"))
+			m = NewSliceMemory([]byte("hello"))
 			m.grow = FixedGrow(5)
 			err = m.Write(6, []byte("world"))
 			Expect(err).To(BeNil())
@@ -78,7 +80,7 @@ var _ = Describe("Memory", func() {
 
 	Describe("LinkedListMemory", func() {
 		It("should write", func() {
-			m := newLinkedListMemory([]byte("hello"), FixedGrow(5))
+			m := NewLinkedListMemory([]byte("hello"), FixedGrow(5))
 
 			err := m.Write(0, []byte("world"))
 			Expect(err).To(BeNil())
@@ -113,7 +115,7 @@ var _ = Describe("Memory", func() {
 			Expect(string(m.start.next.next.buf)).To(Equal("56789"))
 			Expect(m.Length()).To(Equal(20))
 
-			m = newLinkedListMemory([]byte("hello"), FixedGrow(5))
+			m = NewLinkedListMemory([]byte("hello"), FixedGrow(5))
 			err = m.Write(6, []byte("world"))
 			Expect(err).To(BeNil())
 			Expect(string(m.Bytes())).To(Equal("hello\x00world\x00\x00\x00\x00"))
@@ -143,7 +145,7 @@ var _ = Describe("Memory", func() {
 
 			b = make([]byte, 30)
 			err = m.Read(0, b)
-			Expect(err).To(Equal(ErrNotEnoughData))
+			Expect(err).To(Equal(io.EOF))
 
 			b = make([]byte, 20)
 			err = m.Read(0, b)
