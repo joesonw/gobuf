@@ -76,9 +76,9 @@ var _ = Describe("Memory", func() {
 		})
 	})
 
-	Describe("LinkedListMemory", func() {
+	Describe("ListMemory", func() {
 		It("should write", func() {
-			m := NewLinkedListMemory([]byte("hello"), FixedGrow(5))
+			m := NewListMemory([]byte("hello"), FixedGrow(5))
 
 			err := m.Write(0, []byte("world"))
 			Expect(err).To(BeNil())
@@ -113,7 +113,7 @@ var _ = Describe("Memory", func() {
 			Expect(string(m.start.next.next.buf)).To(Equal("56789"))
 			Expect(m.Length()).To(Equal(20))
 
-			m = NewLinkedListMemory([]byte("hello"), FixedGrow(5))
+			m = NewListMemory([]byte("hello"), FixedGrow(5))
 			err = m.Write(6, []byte("world"))
 			Expect(err).To(BeNil())
 			Expect(string(m.Bytes())).To(Equal("hello\x00world\x00\x00\x00\x00"))
@@ -124,12 +124,12 @@ var _ = Describe("Memory", func() {
 		})
 
 		It("should read", func() {
-			m := &LinkedListMemory{
-				start: &linkedListMemoryNode{
+			m := &ListMemory{
+				start: &listMemoryNode{
 					buf: []byte("01234"),
-					next: &linkedListMemoryNode{
+					next: &listMemoryNode{
 						buf: []byte("56789"),
-						next: &linkedListMemoryNode{
+						next: &listMemoryNode{
 							buf: []byte("0123456789"),
 						},
 					},

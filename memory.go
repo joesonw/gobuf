@@ -1,7 +1,6 @@
 package gobuf
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -54,9 +53,6 @@ func (m *SliceMemory) Read(at int, dst []byte) error {
 		return io.EOF
 	}
 
-	for _, b := range m.buf {
-		fmt.Printf("%2x ", b)
-	}
 	copy(dst, m.buf[at:end])
 	return nil
 }
@@ -71,26 +67,26 @@ func (m *SliceMemory) Length() int {
 	return len(m.buf)
 }
 
-type linkedListMemoryNode struct {
+type listMemoryNode struct {
 	buf  []byte
-	next *linkedListMemoryNode
+	next *listMemoryNode
 }
 
-type LinkedListMemory struct {
-	start *linkedListMemoryNode
+type ListMemory struct {
+	start *listMemoryNode
 	grow  Grow
 }
 
-func NewLinkedListMemory(buf []byte, grow Grow) *LinkedListMemory {
-	return &LinkedListMemory{
-		start: &linkedListMemoryNode{
+func NewListMemory(buf []byte, grow Grow) *ListMemory {
+	return &ListMemory{
+		start: &listMemoryNode{
 			buf: buf,
 		},
 		grow: grow,
 	}
 }
 
-func (m *LinkedListMemory) Write(at int, src []byte) error {
+func (m *ListMemory) Write(at int, src []byte) error {
 	total := len(src)
 	end := total + at
 	capacity := 0
@@ -103,7 +99,7 @@ func (m *LinkedListMemory) Write(at int, src []byte) error {
 		// reached end of list, allocate new node
 		if node == nil {
 			newCapacity := m.grow(capacity, end)
-			node = &linkedListMemoryNode{
+			node = &listMemoryNode{
 				buf: make([]byte, newCapacity-capacity),
 			}
 			prev.next = node
@@ -144,7 +140,7 @@ func (m *LinkedListMemory) Write(at int, src []byte) error {
 	return nil
 }
 
-func (m *LinkedListMemory) Read(at int, dst []byte) error {
+func (m *ListMemory) Read(at int, dst []byte) error {
 	total := len(dst)
 	node := m.start
 	read := 0
@@ -188,7 +184,7 @@ func (m *LinkedListMemory) Read(at int, dst []byte) error {
 	return nil
 }
 
-func (m *LinkedListMemory) Bytes() []byte {
+func (m *ListMemory) Bytes() []byte {
 	length := m.Length()
 
 	out := make([]byte, length)
@@ -203,7 +199,7 @@ func (m *LinkedListMemory) Bytes() []byte {
 	return out
 }
 
-func (m *LinkedListMemory) Length() int {
+func (m *ListMemory) Length() int {
 	length := 0
 	node := m.start
 	for node != nil {

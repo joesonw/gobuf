@@ -18,7 +18,7 @@ func WithAutoGrowMemory(grow Grow) OptionFunc {
 
 func WithLinkedListMemory(grow Grow) OptionFunc {
 	return func(b *Buffer, buf []byte) {
-		b.mem = NewLinkedListMemory(buf, grow)
+		b.mem = NewListMemory(buf, grow)
 	}
 }
 

@@ -28,3 +28,14 @@ read only buffer backed by io.Reader
 ## gobuf.Write
 
 write only buffer backed by io.Writer
+
+
+# Memory 
+
+## SliceMemory
+
+backed by a single slice, can be expansive when write heavily with constant memory copying
+
+## LinkedList
+
+backed by a linked list, can be efficient when writing heavily, but performs poor when reading with sparse nodes.
