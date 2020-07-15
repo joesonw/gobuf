@@ -17,6 +17,9 @@ type Memory interface {
 
 	// Length total length
 	Length() int
+
+	// Reset reset memory
+	Reset()
 }
 
 type SliceMemory struct {
@@ -65,6 +68,10 @@ func (m *SliceMemory) Bytes() []byte {
 
 func (m *SliceMemory) Length() int {
 	return len(m.buf)
+}
+
+func (m *SliceMemory) Reset() {
+	m.buf = make([]byte, m.grow(0, 1))
 }
 
 type listMemoryNode struct {
@@ -208,4 +215,10 @@ func (m *ListMemory) Length() int {
 	}
 
 	return length
+}
+
+func (m *ListMemory) Reset() {
+	m.start = &listMemoryNode{
+		buf: make([]byte, m.grow(0, 1)),
+	}
 }

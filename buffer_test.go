@@ -6,6 +6,15 @@ import (
 )
 
 var _ = Describe("Buffer", func() {
+	It("should reset", func() {
+		buf := New([]byte("hello world"), WithAutoGrowMemory(FixedGrow(5)))
+		buf.Reset()
+
+		Expect(buf.Size()).To(Equal(5))
+		Expect(buf.ReaderIndex()).To(Equal(0))
+		Expect(buf.WriterIndex()).To(Equal(0))
+	})
+
 	It("should write", func() {
 		buf := New(nil, WithAutoGrowMemory(FixedGrow(5)))
 		Expect(buf.Size()).To(Equal(0))

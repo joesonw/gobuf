@@ -25,6 +25,10 @@ func (w *Writer) WriterIndex() int {
 	return w.index
 }
 
+func (w *Writer) ResetWriter() {
+	w.index = 0
+}
+
 func (w *Writer) Write(src []byte) (n int, err error) {
 	size := w.WriterIndex() + len(src)
 	n, err = w.WriteSome(src)

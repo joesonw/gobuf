@@ -73,3 +73,10 @@ func (buf *Buffer) Bytes() []byte {
 func (buf *Buffer) Order() binary.ByteOrder {
 	return buf.order
 }
+
+func (buf *Buffer) Reset() {
+	buf.mem.Reset()
+	buf.size = buf.mem.Length()
+	buf.ResetReader()
+	buf.ResetWriter()
+}

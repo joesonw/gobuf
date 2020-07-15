@@ -25,6 +25,10 @@ func (p *Peeker) ReaderIndex() int {
 	return p.index
 }
 
+func (p *Peeker) ResetReader() {
+	p.index = 0
+}
+
 func (p *Peeker) Peek(offset int, dst []byte) (n int, err error) {
 	index := p.ReaderIndex() + offset
 	return p.PeekAt(index, dst)
