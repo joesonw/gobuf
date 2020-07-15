@@ -1,6 +1,9 @@
 package gobuf
 
-import "io"
+import (
+	"fmt"
+	"io"
+)
 
 // Memory used to store raw []byte
 type Memory interface {
@@ -22,9 +25,10 @@ type SliceMemory struct {
 	grow Grow
 }
 
-func NewSliceMemory(buf []byte) *SliceMemory {
+func NewSliceMemory(buf []byte, grow Grow) *SliceMemory {
 	return &SliceMemory{
-		buf: buf,
+		buf:  buf,
+		grow: grow,
 	}
 }
 
@@ -50,6 +54,9 @@ func (m *SliceMemory) Read(at int, dst []byte) error {
 		return io.EOF
 	}
 
+	for _, b := range m.buf {
+		fmt.Printf("%2x ", b)
+	}
 	copy(dst, m.buf[at:end])
 	return nil
 }

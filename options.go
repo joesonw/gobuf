@@ -12,9 +12,7 @@ func WithMemory(m Memory) OptionFunc {
 
 func WithAutoGrowMemory(grow Grow) OptionFunc {
 	return func(b *Buffer, buf []byte) {
-		m := NewSliceMemory(buf)
-		m.grow = grow
-		b.mem = m
+		b.mem = NewSliceMemory(buf, grow)
 	}
 }
 

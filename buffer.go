@@ -17,7 +17,7 @@ type Buffer struct {
 
 func New(buf []byte, options ...OptionFunc) *Buffer {
 	b := &Buffer{
-		mem:     NewSliceMemory(buf),
+		mem:     NewSliceMemory(buf, nil),
 		options: options,
 		order:   binary.LittleEndian,
 	}
@@ -46,9 +46,10 @@ func (buf *Buffer) PeekAt(at int, dst []byte) (n int, err error) {
 	return
 }
 
-func (buf *Buffer) WriteAt(at int, src []byte) (n int, err error) {
-	size := at + len(src)
+func (buf *Buffer) WriteSome(src []byte) (n int, err error) {
+	at := buf.WriterIndex()
 
+	size := at + len(src)
 	err = buf.mem.Write(at, src)
 	if err != nil {
 		return

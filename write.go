@@ -6,7 +6,7 @@ import (
 )
 
 type Writable interface {
-	WriteAt(at int, src []byte) (n int, err error)
+	WriteSome(src []byte) (n int, err error)
 	Order() binary.ByteOrder
 }
 
@@ -21,13 +21,13 @@ func NewWriter(w Writable) *Writer {
 	}
 }
 
-func (w *Writer) WriteIndex() int {
+func (w *Writer) WriterIndex() int {
 	return w.index
 }
 
 func (w *Writer) Write(src []byte) (n int, err error) {
-	size := w.WriteIndex() + len(src)
-	n, err = w.WriteAt(w.WriteIndex(), src)
+	size := w.WriterIndex() + len(src)
+	n, err = w.WriteSome(src)
 	if err != nil {
 		return
 	}

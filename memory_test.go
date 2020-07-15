@@ -10,7 +10,7 @@ import (
 var _ = Describe("Memory", func() {
 	Describe("SliceMemory", func() {
 		It("should read", func() {
-			m := NewSliceMemory([]byte("hello"))
+			m := NewSliceMemory([]byte("hello"), nil)
 
 			b := make([]byte, 5)
 			err := m.Read(0, b)
@@ -28,7 +28,7 @@ var _ = Describe("Memory", func() {
 		})
 
 		It("should write", func() {
-			m := NewSliceMemory([]byte("hello"))
+			m := NewSliceMemory([]byte("hello"), nil)
 
 			err := m.Write(0, []byte("world"))
 			Expect(err).To(BeNil())
@@ -46,8 +46,7 @@ var _ = Describe("Memory", func() {
 
 	Describe("SliceMemory canGrow", func() {
 		It("should write", func() {
-			m := NewSliceMemory([]byte("hello"))
-			m.grow = FixedGrow(5)
+			m := NewSliceMemory([]byte("hello"), FixedGrow(5))
 
 			err := m.Write(0, []byte("world"))
 			Expect(err).To(BeNil())
@@ -64,8 +63,7 @@ var _ = Describe("Memory", func() {
 			Expect(cap(m.buf)).To(Equal(15))
 			Expect(m.Length()).To(Equal(15))
 
-			m = NewSliceMemory([]byte("hello"))
-			m.grow = FixedGrow(5)
+			m = NewSliceMemory([]byte("hello"), FixedGrow(5))
 			err = m.Write(6, []byte("world"))
 			Expect(err).To(BeNil())
 			Expect(string(m.buf)).To(Equal("hello\x00world\x00\x00\x00\x00"))

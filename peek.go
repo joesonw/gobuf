@@ -6,7 +6,7 @@ import (
 )
 
 type Peekable interface {
-	PeekAt(at int, dst []byte) (int, error)
+	PeekAt(at int, dst []byte) (n int, err error)
 	Order() binary.ByteOrder
 }
 
@@ -21,12 +21,12 @@ func NewPeeker(p Peekable) *Peeker {
 	}
 }
 
-func (p *Peeker) ReadIndex() int {
+func (p *Peeker) ReaderIndex() int {
 	return p.index
 }
 
 func (p *Peeker) Peek(offset int, dst []byte) (n int, err error) {
-	index := p.ReadIndex() + offset
+	index := p.ReaderIndex() + offset
 	return p.PeekAt(index, dst)
 }
 

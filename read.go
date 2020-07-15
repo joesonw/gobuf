@@ -28,7 +28,7 @@ func (r *Reader) SkipRead(n int) {
 
 // Available available bytes to read
 func (r *Reader) Available() int {
-	return r.Size() - r.ReadIndex()
+	return r.Size() - r.ReaderIndex()
 }
 
 // Read io.Reader
@@ -185,7 +185,7 @@ func (r *Reader) ReadUntil(delim []byte) ([]byte, bool, error) {
 		return []byte{}, true, nil
 	}
 
-	index := r.ReadIndex() + length
+	index := r.ReaderIndex() + length
 	offset := length
 	size := r.Size()
 
