@@ -168,25 +168,35 @@ func (r *Reader) ReadFloat64() (float64, error) {
 }
 
 //nolint:gocritic
-// ReadUntil read until delimiter, than skip delimiter and return. otherwise, return false
-func (r *Reader) ReadUntil(delim []byte) ([]byte, bool, error) {
-	length := len(delim)
+// ReadUntil read until any delimiter matches, than skip delimiter and return. otherwise, return false
+func (r *Reader) ReadUntil(delims ...[]byte) ([]byte, bool, error) {
 	// short circuit
-	if r.Available() < length {
+	short := true
+	for _, delim := range delims {
+		// if any delim is shorter than available data, means we can short, no need to short
+		if len(delim) <= r.Available() {
+			short = false
+		}
+	}
+
+	if short {
 		return nil, false, nil
 	}
 
-	out, err := r.PeekBytes(length)
-	if err != nil {
-		return nil, false, err
-	}
-	if bytes.Equal(out, delim) {
-		r.SkipRead(length)
-		return []byte{}, true, nil
+	for _, delim := range delims {
+		out, err := r.PeekBytes(len(delim))
+		if err != nil {
+			return nil, false, err
+		}
+		if bytes.Equal(out, delim) {
+			r.SkipRead(len(delim))
+			return []byte{}, true, nil
+		}
 	}
 
-	index := r.ReaderIndex() + length
-	offset := length
+	var out []byte
+	index := r.ReaderIndex()
+	offset := 0
 	size := r.Size()
 
 	for index < size {
@@ -196,9 +206,13 @@ func (r *Reader) ReadUntil(delim []byte) ([]byte, bool, error) {
 		}
 		out = append(out, b)
 
-		if bytes.Equal(out[offset:], delim) {
-			r.SkipRead(offset + 1)
-			return out[:offset], true, nil
+		for _, delim := range delims {
+			length := len(delim)
+			start := len(out) - length
+			if bytes.Equal(out[start:], delim) {
+				r.SkipRead(len(out))
+				return out[:start], true, nil
+			}
 		}
 		offset++
 		index++

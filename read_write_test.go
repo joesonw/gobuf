@@ -162,17 +162,17 @@ var _ = Describe("ReadWrite", func() {
 		b := New(nil, WithAutoGrowMemory(FixedGrow(32)))
 		Expect(b.WriteString("hello world tomorrow")).To(BeNil())
 
-		read, ok, err := b.ReadUntil([]byte("hello world tomorrow "))
+		read, ok, err := b.ReadUntil([]byte("hello world\ttomorrow "))
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeFalse())
 		Expect(string(read)).To(Equal(""))
 
-		read, ok, err = b.ReadUntil([]byte(" "))
+		read, ok, err = b.ReadUntil([]byte(" "), []byte("\t"))
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 		Expect(string(read)).To(Equal("hello"))
 
-		read, ok, err = b.ReadUntil([]byte(" "))
+		read, ok, err = b.ReadUntil([]byte(" "), []byte("\t"))
 		Expect(err).To(BeNil())
 		Expect(ok).To(BeTrue())
 		Expect(string(read)).To(Equal("world"))
